@@ -53,7 +53,7 @@ void setup()
     NRF24L01_WriteReg(NRF24L01_11_RX_PW_P0, packet_size); // rx pipe 0 size
     
     NRF24L01_WriteReg(NRF24L01_02_EN_RXADDR, 0x01);  // Enable data pipe 0 only
-    NRF24L01_SetBitrate(NRF24L01_BR_1M);             // 1Mbps
+    NRF24L01_SetBitrate(NRF24L01_BR_1M);             // 1Mbps, todo: try 250kbps as well
     NRF24L01_WriteReg(NRF24L01_07_STATUS, 0x70);     // Clear data ready, data sent, and retransmit
     
     // sort output to find potential address:
@@ -78,8 +78,6 @@ void setup()
 void loop()
 {
     const uint8_t channel = 0; // TODO: try with 0-127
-    static u16 count = 0;
-    static uint32_t timeout=0;
     uint8_t i;
     NRF24L01_SetTxRxMode(RX_EN);
     NRF24L01_WriteReg(NRF24L01_07_STATUS, 0x70);
@@ -89,14 +87,6 @@ void loop()
     NRF24L01_WriteReg(NRF24L01_00_CONFIG, _BV(NRF24L01_00_PRIM_RX) | _BV(NRF24L01_00_PWR_UP)); // rx mode, no crc
     while(!(NRF24L01_ReadReg(NRF24L01_07_STATUS) & _BV(NRF24L01_07_RX_DR))) {
         ; // wait rx fifo ready    
-    }
-    
-    count++;
-    
-    if(millis() > timeout) {
-        sp("\n %d pps", count);
-        count=0;
-        timeout = millis()+1000;
     }
     
     NRF24L01_ReadPayload(packet,packet_size);
